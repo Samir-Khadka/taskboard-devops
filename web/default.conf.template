@@ -15,11 +15,15 @@ server {
         try_files $uri $uri/ =404;
     }
 
-    # API: /api/tasks is proxied as-is to the API service.
+    # API: /api/tasks is proxied as-is to the API service. The Host
+    # header and TLS SNI must name the API service itself — Render's
+    # edge routes by both; under compose the API ignores them.
     location /api/ {
         proxy_pass ${API_SCHEME}://${API_HOST};
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${API_HOST};
+        proxy_set_header Host ${API_HOST};
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -29,7 +33,9 @@ server {
     location = /metrics {
         proxy_pass ${API_SCHEME}://${API_HOST}/metrics;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${API_HOST};
+        proxy_set_header Host ${API_HOST};
     }
 
     # Liveness of the proxy itself.
