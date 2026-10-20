@@ -37,8 +37,8 @@ services:
     envVars:
       - key: API_SCHEME
         value: https
+      # Full public hostname of the API service. (fromService's `host`
+      # property returns Render's short internal hostname, which nginx
+      # cannot resolve at startup — hence the static value.)
       - key: API_HOST
-        fromService:
-          type: web
-          name: taskboard-api
-          property: host
+        value: taskboard-api-qgbp.onrender.com
