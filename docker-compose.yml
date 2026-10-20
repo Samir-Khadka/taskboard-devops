@@ -34,6 +34,10 @@ services:
   web:
     build: ./web
     image: taskboard-web:local
+    environment:
+      PORT: "80"
+      API_SCHEME: http
+      API_HOST: api:3000
     ports:
       - "8080:80"
     depends_on:

@@ -80,7 +80,7 @@ cd app && npm ci && npm test && npm start   # http://localhost:3000
 ```
 .
 ├── app/                  # Node.js API (src, tests, Dockerfile, package-lock)
-├── web/                  # Static UI + nginx (Dockerfile, nginx.conf)
+├── web/                  # Static UI + nginx (Dockerfile, default.conf.template)
 ├── docker-compose.yml    # Full local / single-host stack
 ├── monitoring/           # Prometheus config, Grafana provisioning + dashboard
 ├── k8s/                  # Raw Kubernetes manifests (+ kustomization.yaml)
@@ -143,7 +143,7 @@ helm install taskboard helm/taskboard -n taskboard --create-namespace \
 Both ship: 2 API replicas with CPU/memory requests & limits, liveness and
 readiness probes on `/health`, an nginx Ingress routing `/` → web and
 `/api` + `/metrics` → api, and an HPA (2–6 replicas at 70% CPU). With raw
-manifests the ingress does the routing that nginx.conf does under compose;
+manifests the ingress does the routing that the nginx template does under compose;
 with Helm the web tier can be disabled (`--set web.enabled=false`).
 
 ## Terraform

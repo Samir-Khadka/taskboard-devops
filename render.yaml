@@ -1,0 +1,44 @@
+# Render blueprint — the free-tier split deployment of TaskBoard.
+#
+#   taskboard-api  Docker web service (app/Dockerfile), Postgres via the
+#                  DATABASE_URL env var (a free Neon database — paste its
+#                  connection string when applying the blueprint; it is
+#                  marked sync:false so it never lives in git).
+#   taskboard-web  Docker web service (web/Dockerfile), nginx serving the
+#                  UI and proxying /api + /metrics to the API's public
+#                  hostname over https (wired via fromService).
+#
+# Prometheus/Grafana stay in the local Compose stack and the Oracle VM
+# deployment — they do not fit Render's free tier.
+services:
+  - type: web
+    name: taskboard-api
+    runtime: docker
+    repo: https://github.com/Samir-Khadka/taskboard-devops
+    branch: main
+    dockerfilePath: ./app/Dockerfile
+    dockerContext: ./app
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+
+  - type: web
+    name: taskboard-web
+    runtime: docker
+    repo: https://github.com/Samir-Khadka/taskboard-devops
+    branch: main
+    dockerfilePath: ./web/Dockerfile
+    dockerContext: ./web
+    plan: free
+    envVars:
+      - key: API_SCHEME
+        value: https
+      - key: API_HOST
+        fromService:
+          type: web
+          name: taskboard-api
+          property: host

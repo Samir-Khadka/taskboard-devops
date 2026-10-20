@@ -1,5 +1,10 @@
 server {
-    listen 80;
+    # PORT / API_SCHEME / API_HOST are substituted by the nginx image's
+    # envsubst template step at container start:
+    #   docker compose: PORT=80,  API_SCHEME=http,  API_HOST=api:3000
+    #   Render:         PORT=<platform port>, API_SCHEME=https,
+    #                   API_HOST=<api service hostname>
+    listen ${PORT};
     server_name _;
 
     root /usr/share/nginx/html;
@@ -10,10 +15,9 @@ server {
         try_files $uri $uri/ =404;
     }
 
-    # API: nginx strips nothing — /api/tasks is proxied as-is to the api
-    # service (docker-compose service name / any host named "api").
+    # API: /api/tasks is proxied as-is to the API service.
     location /api/ {
-        proxy_pass http://api:3000;
+        proxy_pass ${API_SCHEME}://${API_HOST};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -23,7 +27,7 @@ server {
 
     # Prometheus metrics, exposed through the same origin for convenience.
     location = /metrics {
-        proxy_pass http://api:3000/metrics;
+        proxy_pass ${API_SCHEME}://${API_HOST}/metrics;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
     }
