@@ -11,6 +11,18 @@ tested, packaged, deployed, observed and operated. Design notes live in
 [docs/architecture.md](docs/architecture.md); day-2 operations in
 [docs/runbook.md](docs/runbook.md).
 
+## Live demo (free tier)
+
+- **Web UI:** https://taskboard-web-ykc3.onrender.com
+- **API:** https://taskboard-api-qgbp.onrender.com — try `/health`, `/api/tasks`, `/metrics`
+
+Deployed from [`render.yaml`](render.yaml) as two free Render Docker
+services (API + nginx web tier), with a free [Neon](https://neon.tech)
+Postgres database wired in through the `DATABASE_URL` secret. Free services
+sleep when idle, so the first request after a quiet period takes up to a
+minute while everything wakes. Prometheus/Grafana run in the local Compose
+stack (and in the VM deployment path) — they don't fit the free tier.
+
 ## What this demonstrates
 
 | Area                  | Where                                          | Highlights                                                                 |
