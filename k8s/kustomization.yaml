@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: taskboard
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - web-deployment.yaml
+  - web-service.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+# NOTE: secret.example.yaml is intentionally excluded. Create the real
+# secret out-of-band before applying, e.g.:
+#   kubectl -n taskboard create secret generic taskboard-api-secret \
+#     --from-literal=DATABASE_URL='postgres://...'

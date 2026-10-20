@@ -1,0 +1,9 @@
+# Example inventory — copy to `inventory` and fill in your host.
+# The host is the EC2 instance from terraform/ (see its outputs).
+
+[taskboard]
+taskboard.example.com
+
+[taskboard:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/taskboard.pem

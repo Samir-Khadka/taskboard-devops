@@ -1,0 +1,30 @@
+TaskBoard is installed.
+
+{{- if .Values.ingress.enabled }}
+
+Access it through the ingress:
+
+  http://{{ .Values.ingress.host }}/
+
+  UI:      http://{{ .Values.ingress.host }}/
+  API:     http://{{ .Values.ingress.host }}/api/tasks
+  Metrics: http://{{ .Values.ingress.host }}/metrics
+
+{{- else }}
+
+Port-forward to try it locally:
+
+  kubectl port-forward svc/{{ include "taskboard.apiName" . }} 3000:{{ .Values.api.config.port }}
+  curl http://localhost:3000/health
+
+{{- end }}
+{{- if and (not .Values.api.existingSecret) (not .Values.api.databaseUrl) }}
+
+NOTE: no database was configured (api.existingSecret / api.databaseUrl are
+empty), so the API is using its in-memory store. Tasks will be lost when a
+pod restarts. Create a secret and set api.existingSecret for durable data:
+
+  kubectl create secret generic taskboard-db \
+    --from-literal=DATABASE_URL='postgres://user:pass@host:5432/taskboard'
+
+{{- end }}

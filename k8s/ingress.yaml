@@ -1,0 +1,35 @@
+# In Kubernetes the ingress does the routing that nginx.conf does under
+# docker compose: the browser only ever talks to the ingress, /api and
+# /metrics go straight to the api service, everything else to the web UI.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taskboard
+  namespace: taskboard
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: taskboard.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: taskboard-api
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: taskboard-api
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: taskboard-web
+                port:
+                  number: 80

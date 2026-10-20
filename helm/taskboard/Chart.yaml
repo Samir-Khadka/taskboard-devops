@@ -1,0 +1,13 @@
+apiVersion: v2
+name: taskboard
+description: TaskBoard — a small task API + static UI, packaged to demonstrate production-grade DevOps practices.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/Samir-Khadka/taskboard-devops
+maintainers:
+  - name: Samir Khadka
+keywords:
+  - tasks
+  - devops
+  - demo

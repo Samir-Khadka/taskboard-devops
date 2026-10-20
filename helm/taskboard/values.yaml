@@ -1,0 +1,51 @@
+# Default values for the TaskBoard chart.
+
+api:
+  image:
+    repository: ghcr.io/samir-khadka/taskboard-devops-api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  config:
+    nodeEnv: production
+    port: 3000
+  # Database connection. Two options:
+  #   1. existingSecret: name of a Secret containing a DATABASE_URL key
+  #      (recommended — nothing sensitive lives in values).
+  #   2. databaseUrl: a literal connection string (local experiments only).
+  # Leave both empty and the API runs with its in-memory store.
+  databaseUrl: ""
+  existingSecret: ""
+
+web:
+  enabled: true
+  image:
+    repository: ghcr.io/samir-khadka/taskboard-devops-web
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: taskboard.example.com
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70

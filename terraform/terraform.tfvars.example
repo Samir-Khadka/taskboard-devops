@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars and fill in your values.
+# terraform.tfvars is git-ignored — never commit real values.
+
+aws_region    = "ap-south-1"
+project       = "taskboard"
+instance_type = "t3.micro"
+
+# Restrict admin surfaces (SSH, Grafana, Prometheus) to your own IP.
+admin_cidr = "203.0.113.10/32"
+
+# An existing EC2 key pair name, for SSH access.
+key_name = ""
+
+repo_url = "https://github.com/Samir-Khadka/taskboard-devops.git"

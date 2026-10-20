@@ -1,0 +1,28 @@
+# Dependencies & build output
+node_modules/
+dist/
+
+# Environment / secrets
+.env
+*.pem
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+!terraform.tfvars.example
+crash.log
+override.tf
+*_override.tf
+
+# Ansible
+ansible/inventory
+!ansible/inventory.example
+*.retry
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

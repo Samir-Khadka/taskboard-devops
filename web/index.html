@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TaskBoard</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --border: #334155;
+    --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; --danger: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text);
+    display: flex; justify-content: center; padding: 2.5rem 1rem;
+  }
+  main { width: 100%; max-width: 560px; }
+  h1 { font-size: 1.75rem; margin: 0 0 .25rem; }
+  h1 span { color: var(--accent); }
+  p.sub { color: var(--muted); margin: 0 0 1.5rem; }
+  form { display: flex; gap: .5rem; margin-bottom: 1rem; }
+  input[type="text"] {
+    flex: 1; padding: .65rem .8rem; border-radius: .5rem;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    font-size: 1rem;
+  }
+  button {
+    padding: .65rem 1rem; border: 0; border-radius: .5rem; cursor: pointer;
+    background: var(--accent); color: #082f49; font-weight: 600; font-size: .95rem;
+  }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex; align-items: center; gap: .75rem;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: .5rem; padding: .65rem .8rem; margin-bottom: .5rem;
+  }
+  li .title { flex: 1; }
+  li.done .title { text-decoration: line-through; color: var(--muted); }
+  li button.del {
+    background: transparent; color: var(--danger); padding: .25rem .4rem; font-size: 1rem;
+  }
+  .empty { color: var(--muted); text-align: center; padding: 1.5rem 0; }
+  .error { color: var(--danger); min-height: 1.25rem; margin-bottom: .5rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Task<span>Board</span></h1>
+  <p class="sub">A tiny task app — the real project is the DevOps pipeline around it.</p>
+
+  <div class="error" id="error"></div>
+  <form id="add-form">
+    <input type="text" id="new-title" placeholder="What needs doing?" maxlength="200" required />
+    <button type="submit">Add task</button>
+  </form>
+
+  <ul id="tasks"></ul>
+  <p class="empty" id="empty" hidden>No tasks yet. Add your first one above.</p>
+</main>
+
+<script>
+  const listEl = document.getElementById("tasks");
+  const emptyEl = document.getElementById("empty");
+  const errorEl = document.getElementById("error");
+  const form = document.getElementById("add-form");
+  const input = document.getElementById("new-title");
+
+  async function request(path, options = {}) {
+    const res = await fetch(path, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    return res.status === 204 ? null : res.json();
+  }
+
+  function render(tasks) {
+    listEl.innerHTML = "";
+    emptyEl.hidden = tasks.length > 0;
+    for (const task of tasks) {
+      const li = document.createElement("li");
+      if (task.done) li.className = "done";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = task.done;
+      checkbox.addEventListener("change", () =>
+        update(task.id, { done: checkbox.checked })
+      );
+
+      const title = document.createElement("span");
+      title.className = "title";
+      title.textContent = task.title;
+
+      const del = document.createElement("button");
+      del.className = "del";
+      del.textContent = "✕";
+      del.title = "Delete task";
+      del.addEventListener("click", () => remove(task.id));
+
+      li.append(checkbox, title, del);
+      listEl.append(li);
+    }
+  }
+
+  async function load() {
+    try {
+      errorEl.textContent = "";
+      render(await request("/api/tasks"));
+    } catch (err) {
+      errorEl.textContent = "Could not reach the API. " + err.message;
+    }
+  }
+
+  async function update(id, patch) {
+    try {
+      await request(`/api/tasks/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      });
+      await load();
+    } catch (err) {
+      errorEl.textContent = "Update failed. " + err.message;
+    }
+  }
+
+  async function remove(id) {
+    try {
+      await request(`/api/tasks/${id}`, { method: "DELETE" });
+      await load();
+    } catch (err) {
+      errorEl.textContent = "Delete failed. " + err.message;
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const title = input.value.trim();
+    if (!title) return;
+    try {
+      await request("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify({ title }),
+      });
+      input.value = "";
+      await load();
+    } catch (err) {
+      errorEl.textContent = "Could not add the task. " + err.message;
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>

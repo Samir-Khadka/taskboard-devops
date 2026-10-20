@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskboard-web
+  namespace: taskboard
+  labels:
+    app: taskboard-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: taskboard-web
+  template:
+    metadata:
+      labels:
+        app: taskboard-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/samir-khadka/taskboard-devops-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
