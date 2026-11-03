@@ -73,21 +73,39 @@ jobs:
   bump-shipit:
     # Closes the GitOps loop: write the new :<sha> tags into the
     # shipit-platform repo so ArgoCD deploys them to the cluster.
+    #
+    # NOTE: the `secrets` context is NOT allowed in a job-level `if`
+    # (GitHub rejects the whole run with "Unrecognized named-value:
+    # 'secrets'"). The PAT check therefore happens in a step below; the
+    # job is gated only on event/ref, which the `github` context allows.
+    # Without the PAT the job prints the manual fallback and succeeds.
     name: Bump ShipIt image tags
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.SHIPIT_BUMP_PAT != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - name: Check for SHIPIT_BUMP_PAT
+        id: has-pat
+        env:
+          PAT: ${{ secrets.SHIPIT_BUMP_PAT }}
+        run: |
+          if [ -n "${PAT}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "SHIPIT_BUMP_PAT is not set on this repo — skipping the automatic tag bump."
+            echo "Run scripts/bump-service-image.sh from the shipit-platform repo manually instead."
+          fi
       - uses: actions/checkout@v4
+        if: steps.has-pat.outputs.present == 'true'
         with:
           repository: Samir-Khadka/shipit-platform
           token: ${{ secrets.SHIPIT_BUMP_PAT }}
           fetch-depth: 0
           path: shipit-platform
       - name: Bump taskboard image tags to the new sha
+        if: steps.has-pat.outputs.present == 'true'
         working-directory: shipit-platform
-        env:
-          SHIPIT_PAT: ${{ secrets.SHIPIT_BUMP_PAT }}
         run: |
           set -e
           SHA="${{ github.sha }}"
