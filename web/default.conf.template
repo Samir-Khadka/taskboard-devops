@@ -1,9 +1,9 @@
 server {
     # PORT / API_SCHEME / API_HOST are substituted by the nginx image's
     # envsubst template step at container start:
-    #   docker compose: PORT=80,  API_SCHEME=http,  API_HOST=api:3000
-    #   Render:         PORT=<platform port>, API_SCHEME=https,
-    #                   API_HOST=<api service hostname>
+    #   docker compose / k8s: PORT=8080, API_SCHEME=http, API_HOST=taskboard-api:3000
+    #   Render:                 PORT=<platform port>, API_SCHEME=https,
+    #                           API_HOST=<api service hostname>
     listen ${PORT};
     server_name _;
 

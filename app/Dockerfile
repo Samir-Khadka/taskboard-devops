@@ -1,13 +1,17 @@
 # syntax=docker/dockerfile:1
 
+# Base pinned to an exact patch (verified on Docker Hub 2026-11-03) so
+# rebuilds are reproducible and the supply chain is auditable.
+# Re-pin deliberately when you want a newer Node, then re-scan.
+
 # ---- Stage 1: install production dependencies -----------------------------
-FROM node:20-alpine AS deps
+FROM node:20.20.2-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 
 # ---- Stage 2: slim runtime --------------------------------------------------
-FROM node:20-alpine AS runtime
+FROM node:20.20.2-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
