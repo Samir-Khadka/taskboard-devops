@@ -25,6 +25,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 
+# npm is only needed at build time (deps stage). Strip its bundled
+# node_modules from the runtime image: Trivy flags several HIGH/CRITICAL
+# CVEs in npm's own dependencies (tar, pacote, sigstore, ...), none of
+# which the app uses at runtime (it runs via `node` directly).
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 # Run as the unprivileged node user that ships with the image.
 USER node
 

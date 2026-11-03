@@ -12,10 +12,17 @@
 # container start) works identically here; just never bind below 1024.
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
+# The base image sets USER nginx, so apk needs a temporary privilege
+# escalation. Switch back to nginx right after — the final image still
+# runs fully unprivileged (Kyverno require-pod-security).
+USER root
+
 # Refresh fixable OS packages: the pinned base (2025-06) predates many
 # alpine security updates. A full upgrade is safe here — the image is
 # just nginx + a static file. Keeps the Trivy HIGH/CRITICAL gate green.
 RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
+
+USER nginx
 
 # In-cluster defaults (ShipIt/k8s). Override per environment via env vars.
 ENV PORT=8080 \
