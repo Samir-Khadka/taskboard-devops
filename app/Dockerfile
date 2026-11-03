@@ -15,6 +15,11 @@ FROM node:20.20.2-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
+# Refresh fixable OS packages: the pinned base (2026-04) predates several
+# alpine security updates (openssl). Targeted upgrade only, so the layer
+# stays close to the pinned base. Keeps the Trivy HIGH/CRITICAL gate green.
+RUN apk update && apk upgrade libcrypto3 libssl3 && rm -rf /var/cache/apk/*
+
 # Copy only what the app needs at runtime.
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
